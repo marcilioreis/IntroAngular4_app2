@@ -1,11 +1,11 @@
-import { Http } from '@angular/http';
+import { Http, Response } from '@angular/http';
 import { Injectable } from '@angular/core';
 import { Oferta } from './shared/oferta.model';
 
 import { URL_API } from './app.api';
 import { Observable } from 'rxjs';
 
-import { map } from 'rxjs/operators';
+import { map, retry } from 'rxjs/operators';
 
 @Injectable()
 export class OfertasService {
@@ -18,20 +18,20 @@ export class OfertasService {
         // efetuar uma requisição http
         return this.http.get(`${URL_API}/ofertas?destaque=true`)
             .toPromise()
-            .then((resposta: any) => resposta.json());
+            .then((resposta: Response) => resposta.json());
         // retornar uma promisse OFERTA{}
     }
 
     public getOfertasPorCategoria(categoria: string): Promise<Oferta[]> {
         return this.http.get(`${URL_API}/ofertas?categoria=${categoria}`)
             .toPromise()
-            .then((resposta: any) => resposta.json());
+            .then((resposta: Response) => resposta.json());
     }
 
     public getOfertaPorId(id: number): Promise<Oferta> {
         return this.http.get(`${URL_API}/ofertas?id=${id}`)
             .toPromise()
-            .then((resposta: any) =>  {
+            .then((resposta: Response) =>  {
                 return resposta.json()[0];
             });
     }
@@ -39,7 +39,7 @@ export class OfertasService {
     public getComoUsarOfertaPorId(id: number): Promise<string> {
         return this.http.get(`${URL_API}/como-usar?id=${id}`)
             .toPromise()
-            .then((resposta: any) =>  {
+            .then((resposta: Response) =>  {
                 return resposta.json()[0].descricao;
             });
     }
@@ -47,15 +47,16 @@ export class OfertasService {
     public getOndeFicaOfertaPorId(id: number): Promise<string> {
         return this.http.get(`${URL_API}/onde-fica?id=${id}`)
             .toPromise()
-            .then((resposta: any) =>  {
+            .then((resposta: Response) =>  {
                 return resposta.json()[0].descricao;
             });
     }
 
     public pesquisaOfertas(termo: string): Observable<Oferta[]> {
-        return this.http.get(`${URL_API}/ofertas?descicao_oferta=${termo}`)
+        return this.http.get(`${URL_API}/ofertas?descricao_oferta_like=${termo}`)
         .pipe(
-            map((resposta: any) => resposta.json())
+            retry(10),
+            map((resposta: Response) => resposta.json())
         );
     }
 }
